@@ -25,7 +25,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.Interpolator
-import androidx.annotation.FloatRange
 import java.lang.ref.WeakReference
 
 data class ScalableView(
@@ -39,7 +38,6 @@ data class ScalableView(
 
     val pushScaleMode: ScaleMode = DEFAULT_SCALE_MODE,
 
-    @FloatRange(from = 0.0, to = 1.0, fromInclusive = true, toInclusive = true)
     val pushScale: Float = when (pushScaleMode) {
         ScaleMode.FLOAT_RANGE -> DEFAULT_PUSH_SCALE_FLOAT_RANGE
         ScaleMode.DP -> DEFAULT_PUSH_SCALE_DP
@@ -99,7 +97,6 @@ data class ScalableView(
 
         var pushScaleMode: ScaleMode = DEFAULT_SCALE_MODE
 
-        @FloatRange(from = 0.0, to = 1.0, fromInclusive = true, toInclusive = true)
         var pushScale: Float = when (pushScaleMode) {
             ScaleMode.FLOAT_RANGE -> DEFAULT_PUSH_SCALE_FLOAT_RANGE
             ScaleMode.DP -> DEFAULT_PUSH_SCALE_DP
