@@ -1,9 +1,9 @@
 package kz.q19.scalablebutton
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_main.*
+import androidx.appcompat.app.AppCompatActivity
 import kz.q19.animateviewscale.ScalableView
 import kz.q19.animateviewscale.ScalableView.Companion.setScalableViewAnimationListener
 
@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        textView.setScalableViewAnimationListener(
+        findViewById<TextView>(R.id.textView).setScalableViewAnimationListener(
             params = {
                 pushScale = 10F
                 pushScaleMode = ScalableView.ScaleMode.DP

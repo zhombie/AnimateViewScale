@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
 package kz.q19.animateviewscale
 
 import android.animation.*
@@ -26,8 +28,9 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.Interpolator
 import java.lang.ref.WeakReference
+import kotlin.math.roundToInt
 
-data class ScalableView(
+class ScalableView constructor(
     var weakView: WeakReference<View>? = null,
 
     val pushDuration: Long = DEFAULT_PUSH_DURATION,
@@ -60,19 +63,27 @@ data class ScalableView(
 
         private val DEFAULT_INTERPOLATOR: Interpolator = AccelerateDecelerateInterpolator()
 
-        inline fun View.setScalableViewAnimationListener(block: Builder.() -> Unit): ScalableView =
-            Builder(this).apply(block).build()
+        inline fun View.setScalableViewAnimationListener(
+            block: Builder.() -> Unit
+        ): ScalableView {
+            return Builder(this)
+                .apply(block)
+                .build()
+        }
 
         inline fun View.setScalableViewAnimationListener(
             params: Builder.() -> Unit,
             onTouchListener: View.OnTouchListener? = null,
             onClickListener: View.OnClickListener? = null,
             onLongClickListener: View.OnLongClickListener? = null
-        ): ScalableView =
-            Builder(this).apply(params).build()
+        ): ScalableView {
+            return Builder(this)
+                .apply(params)
+                .build()
                 .setOnTouchEvent(onTouchListener)
                 .setOnClickListener(onClickListener)
                 .setOnLongClickListener(onLongClickListener)
+        }
     }
 
     private constructor(
@@ -88,7 +99,7 @@ data class ScalableView(
         pushScale = builder.pushScale
     )
 
-    class Builder(var view: View) {
+    class Builder constructor(var view: View) {
         var pushDuration: Long = DEFAULT_PUSH_DURATION
         var releaseDuration: Long = DEFAULT_RELEASE_DURATION
 
@@ -104,7 +115,7 @@ data class ScalableView(
 
         fun build(): ScalableView {
             if (pushScaleMode == ScaleMode.FLOAT_RANGE && (pushScale < 0.0F || pushScale > 1.0F)) {
-                throw IllegalStateException("The value of pushScale should be between 0.0 & 1.0.")
+                throw IllegalStateException("The value of pushScale should be between 0.0 & 1.0 (if pushScaleMode = ScaleMode.FLOAT_RANGE).")
             }
             return ScalableView(view, this)
         }
@@ -115,7 +126,10 @@ data class ScalableView(
     private var scaleAnimatorSet: AnimatorSet? = null
 
     init {
+        weakView?.get()?.doOnDetach { release() }
+
         weakView?.get()?.isClickable = false
+
         defaultScaleX = weakView?.get()?.scaleX ?: 0F
     }
 
@@ -139,12 +153,7 @@ data class ScalableView(
                             when (event?.action) {
                                 MotionEvent.ACTION_DOWN -> {
                                     isOutSide = false
-                                    rect = Rect(
-                                        view.left,
-                                        view.top,
-                                        view.right,
-                                        view.bottom
-                                    )
+                                    rect = Rect(view.left, view.top, view.right, view.bottom)
                                     makeDecisionOnScaleAnimation(
                                         view,
                                         pushScaleMode,
@@ -156,8 +165,8 @@ data class ScalableView(
                                 MotionEvent.ACTION_MOVE -> {
                                     if (!isOutSide &&
                                         rect?.contains(
-                                            view.left + event.x.toInt(),
-                                            view.top + event.y.toInt()
+                                            view.left + event.x.roundToInt(),
+                                            view.top + event.y.roundToInt()
                                         ) == false
                                     ) {
                                         isOutSide = true
@@ -204,6 +213,7 @@ data class ScalableView(
     }
 
     fun release() {
+        scaleAnimatorSet?.cancel()
         scaleAnimatorSet = null
 
         defaultScaleX = 0F
@@ -238,6 +248,7 @@ data class ScalableView(
         view.animate().cancel()
 
         scaleAnimatorSet?.cancel()
+        scaleAnimatorSet = null
 
         val scaleX = ObjectAnimator.ofFloat(view, "scaleX", scale)
         val scaleY = ObjectAnimator.ofFloat(view, "scaleY", scale)
@@ -252,16 +263,6 @@ data class ScalableView(
         scaleAnimatorSet
             ?.play(scaleX)
             ?.with(scaleY)
-
-        scaleX.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator) {
-                super.onAnimationStart(animation)
-            }
-
-            override fun onAnimationEnd(animation: Animator) {
-                super.onAnimationEnd(animation)
-            }
-        })
 
         scaleX.addUpdateListener {
             val viewParent = view.parent
